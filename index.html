@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fancy Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #0d0d0d;
+      --display-bg: rgba(0, 0, 0, 0.6);
+      --text-color: #fff;
+      --btn-bg: rgba(255, 153, 0, 0.8);
+      --btn-hover: #ffa500;
+      --btn-shadow: 0 6px 15px rgba(255, 165, 0, 0.4);
+      --accent: #ff9900;
+    }
+
+    body.light {
+      --bg-color: #f9f9f9;
+      --display-bg: rgba(255, 255, 255, 0.7);
+      --text-color: #111;
+      --btn-bg: rgba(255, 190, 60, 0.9);
+      --btn-hover: #ffb300;
+      --btn-shadow: 0 6px 15px rgba(255, 190, 60, 0.4);
+      --accent: #ff9800;
+    }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      transition: background 0.3s ease;
+    }
+
+    .toggle {
+      margin-bottom: 20px;
+    }
+
+    .toggle input {
+      appearance: none;
+      width: 50px;
+      height: 26px;
+      background: #555;
+      border-radius: 50px;
+      position: relative;
+      outline: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle input:checked {
+      background: var(--accent);
+    }
+
+    .toggle input::before {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s;
+    }
+
+    .toggle input:checked::before {
+      transform: translateX(24px);
+    }
+
+    .calculator {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 25px;
+      width: 340px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .display {
+      background: var(--display-bg);
+      color: var(--text-color);
+      font-size: 2.5rem;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      text-align: right;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    button {
+      font-size: 1.4rem;
+      padding: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: black;
+      box-shadow: var(--btn-shadow);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: var(--btn-hover);
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .span-2 {
+      grid-column: span 2;
+    }
+
+    .equal {
+      background-color: #ff5e00 !important;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toggle">
+    <input type="checkbox" id="themeSwitch" onchange="toggleTheme()" />
+  </div>
+
+  <div class="calculator">
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button onclick="clearAll()">AC</button>
+      <button onclick="deleteLast()">DEL</button>
+      <button onclick="appendOperator('%')">%</button>
+      <button onclick="appendOperator('+')">+</button>
+
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button onclick="appendOperator('-')">−</button>
+
+      <button onclick="appendNumber('4')">4</button>
+      <button onclick="appendNumber('5')">5</button>
+      <button onclick="appendNumber('6')">6</button>
+      <button onclick="appendOperator('*')">×</button>
+
+      <button onclick="appendNumber('3')">3</button>
+      <button onclick="appendNumber('2')">2</button>
+      <button onclick="appendNumber('1')">1</button>
+      <button onclick="appendOperator('/')">÷</button>
+
+      <button onclick="appendNumber('0')">0</button>
+      <button onclick="appendNumber('.')">.</button>
+      <button onclick="calculate()" class="equal span-2">=</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    let currentInput = "";
+    let shouldReset = false;
+
+    function appendNumber(number) {
+      if (shouldReset) {
+        currentInput = "";
+        shouldReset = false;
+      }
+      currentInput += number;
+      updateDisplay();
+    }
+
+    function appendOperator(operator) {
+      if (currentInput === "") return;
+      const lastChar = currentInput[currentInput.length - 1];
+      if ("+-*/%".includes(lastChar)) {
+        currentInput = currentInput.slice(0, -1) + operator;
+      } else {
+        currentInput += operator;
+      }
+      shouldReset = false;
+      updateDisplay();
+    }
+
+    function calculate() {
+      try {
+        currentInput = eval(currentInput).toString();
+        updateDisplay();
+        shouldReset = true;
+      } catch {
+        currentInput = "Error";
+        updateDisplay();
+        shouldReset = true;
+      }
+    }
+
+    function clearAll() {
+      currentInput = "";
+      updateDisplay();
+    }
+
+    function deleteLast() {
+      if (currentInput.length > 0) {
+        currentInput = currentInput.slice(0, -1);
+        updateDisplay();
+      }
+    }
+
+    function updateDisplay() {
+      display.textContent = currentInput || "0";
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+    }
+  </script>
+
+</body>
+</html>
